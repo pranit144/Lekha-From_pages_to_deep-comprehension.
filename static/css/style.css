@@ -26,12 +26,14 @@
 
 html, body {
   height: 100%;
+  width: 100%;
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 16px;
   line-height: 1.6;
   overflow: hidden;
+  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -webkit-touch-callout: none;
 }
@@ -302,6 +304,8 @@ html, body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  width: 100%;
+  height: 100%;
 }
 
 /* ── Side Panels (Hidden on Mobile) ──────────── */
@@ -343,7 +347,7 @@ html, body {
   }
 
   .reading-main {
-    padding: 2rem 2.5rem;
+    padding: 2rem 2.5rem 1rem 2.5rem;
   }
 }
 
@@ -378,11 +382,14 @@ html, body {
 .reading-main {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
-  padding: 1rem 1rem 6.5rem 1rem;
-  gap: 1.25rem;
+  padding: 0.75rem 1rem 5.5rem 1rem;
+  gap: 1rem;
+  width: 100%;
   max-width: 100%;
+  box-sizing: border-box;
 }
 
 .sentence-stage {
@@ -397,15 +404,18 @@ html, body {
 }
 .current-sentence {
   font-family: var(--font-display);
-  font-size: clamp(1.3rem, 5vw, 2rem);
+  font-size: clamp(1.2rem, 6vw, 2.2rem);
   font-weight: 400;
-  line-height: 1.7;
+  line-height: 1.8;
   color: var(--text);
-  min-height: 5rem;
+  min-height: 6rem;
   animation: fadeIn 0.35s ease;
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  width: 100%;
 }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
@@ -453,24 +463,28 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 0.75rem;
+  gap: 8px;
+  padding: 0.5rem;
   border-top: 1px solid var(--border);
   border-bottom: none;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   background: var(--bg);
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
+  width: 100%;
   z-index: 100;
-  max-height: 100px;
+  height: auto;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .ctrl-btn {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
   border: 1px solid var(--border);
   border-radius: 50%;
   background: transparent;
@@ -482,6 +496,7 @@ html, body {
   transition: all 0.2s;
   touch-action: manipulation;
   flex-shrink: 0;
+  padding: 0;
 }
 
 .ctrl-btn svg {
@@ -499,8 +514,10 @@ html, body {
 }
 
 .ctrl-btn.play-btn {
-  width: 56px;
-  height: 56px;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
   background: var(--accent);
   border-color: var(--accent);
   color: var(--bg);
@@ -511,8 +528,8 @@ html, body {
 }
 
 .ctrl-btn.play-btn svg {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
 }
 
 /* Hide advanced controls on mobile */
@@ -529,11 +546,31 @@ html, body {
     bottom: auto;
     left: auto;
     right: auto;
+    width: auto;
     flex-wrap: wrap;
     justify-content: flex-start;
     padding: 1rem 0;
     border-top: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
+  }
+
+  .ctrl-btn {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .ctrl-btn.play-btn {
+    width: 56px;
+    height: 56px;
+    min-width: 56px;
+    min-height: 56px;
+  }
+
+  .ctrl-btn.play-btn svg {
+    width: 22px;
+    height: 22px;
   }
 
   .speed-control,
