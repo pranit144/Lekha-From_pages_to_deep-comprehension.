@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lekha — AI Reading Assistant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
+</head>
+<body>
+
+<!-- Upload Screen -->
+<div id="upload-screen" class="screen active">
+  <div class="upload-bg-grid"></div>
+  <div class="upload-container">
+    <div class="brand">
+      <span class="brand-icon">◈</span>
+      <h1 class="brand-name">Lekha</h1>
+      <p class="brand-tagline">AI-Powered Deep Reading</p>
+    </div>
+
+    <div class="upload-card">
+      <div class="drop-zone" id="dropZone">
+        <div class="drop-icon">
+          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 40h32M24 8v24M14 18l10-10 10 10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <p class="drop-title">Drop PDF or TXT here</p>
+        <p class="drop-sub">or click to browse files</p>
+        <input type="file" id="fileInput" accept=".pdf,.txt,.text" hidden>
+      </div>
+
+      <div class="divider"><span>or paste text</span></div>
+
+      <textarea id="pasteText" class="paste-area" placeholder="Paste any article, book excerpt, research paper, or any text you want to read deeply..."></textarea>
+
+      <div class="upload-actions">
+        <input type="text" id="bookTitle" class="title-input" placeholder="Book / Article title (optional)">
+        <button class="btn-start" id="startBtn" onclick="startReading()">
+          <span>Begin Reading</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="upload-features">
+      <div class="feature"><span class="feat-icon">◎</span> Sentence-by-sentence audio</div>
+      <div class="feature"><span class="feat-icon">◈</span> AI explanations</div>
+      <div class="feature"><span class="feat-icon">◇</span> Active recall testing</div>
+      <div class="feature"><span class="feat-icon">◉</span> Focus mode + Pomodoro</div>
+    </div>
+  </div>
+</div>
+
+<!-- Reader Screen -->
+<div id="reader-screen" class="screen">
+
+  <!-- Top Bar -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="brand-icon small">◈</span>
+      <span class="book-title-display" id="bookTitleDisplay">Reading...</span>
+    </div>
+    <div class="topbar-center">
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <span class="progress-label" id="progressLabel">0 / 0</span>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn" onclick="toggleFocusMode()" title="Focus Mode">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+      </button>
+      <button class="topbar-btn" onclick="resetToUpload()" title="New Book">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="reader-layout">
+
+    <!-- Left Panel: PDF Viewer (if PDF) -->
+    <aside class="side-panel pdf-panel" id="pdfPanel" style="display:none">
+      <div class="pdf-header">
+        <div class="panel-label">PDF Preview</div>
+        <div class="pdf-page-nav">
+          <button class="pdf-nav-btn" onclick="prevPdfPage()" title="Previous page">◀</button>
+          <span class="pdf-page-counter"><span id="pdfCurrentPage">0</span> / <span id="pdfTotalPages">0</span></span>
+          <button class="pdf-nav-btn" onclick="nextPdfPage()" title="Next page">▶</button>
+        </div>
+      </div>
+      <div class="pdf-viewer-container">
+        <canvas class="pdf-viewer" id="pdfCanvas"></canvas>
+        <div class="pdf-loading" id="pdfLoading" style="display:none">Loading PDF...</div>
+      </div>
+      <div class="pdf-thumbnails" id="pdfThumbnails"></div>
+    </aside>
+
+    <!-- Left Panel: Sentence Navigator (if not PDF) -->
+    <aside class="side-panel left-panel" id="sentencePanel">
+      <div class="panel-label">Sentences</div>
+      <div class="sentence-list" id="sentenceList"></div>
+    </aside>
+
+    <!-- Center: Main Reading Area -->
+    <main class="reading-main">
+
+      <!-- Current Sentence Display -->
+      <div class="sentence-stage">
+        <div class="sentence-counter" id="sentenceCounter">—</div>
+        <div class="current-sentence" id="currentSentence">
+          <span class="sentence-word-wrap">Load your book to begin.</span>
+        </div>
+        <div class="sentence-actions">
+          <button class="ghost-btn" onclick="explainSentence()" id="explainBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Explain this
+          </button>
+          <button class="ghost-btn" onclick="triggerRecall()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Test recall
+          </button>
+        </div>
+      </div>
+
+      <!-- Playback Controls -->
+      <div class="controls-bar">
+        <button class="ctrl-btn" onclick="prevSentence()" title="Previous">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5"/></svg>
+        </button>
+        <button class="ctrl-btn play-btn" id="playBtn" onclick="togglePlay()">
+          <svg id="playIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        </button>
+        <button class="ctrl-btn" onclick="nextSentence()" title="Next">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+        </button>
+        <button class="ctrl-btn" onclick="repeatSentence()" title="Repeat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+        </button>
+
+        <div class="speed-control">
+          <span class="speed-label">Speed</span>
+          <input type="range" min="0.5" max="2" step="0.25" value="1" id="speedSlider" oninput="updateSpeed(this.value)">
+          <span class="speed-val" id="speedVal">1.0×</span>
+        </div>
+
+        <div class="voice-control">
+          <span class="voice-label">Narrator</span>
+          <select id="voiceSelect" onchange="changeVoice(this)" class="voice-select">
+            <option value="0">Loading voices...</option>
+          </select>
+        </div>
+
+        <label class="auto-toggle">
+          <input type="checkbox" id="autoAdvance" onchange="toggleAuto(this)">
+          <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          <span class="toggle-label">Auto</span>
+        </label>
+      </div>
+
+      <!-- AI Explanation Panel -->
+      <div class="ai-panel" id="aiPanel" style="display:none">
+        <div class="ai-panel-header">
+          <span class="ai-badge">AI</span>
+          <span class="ai-panel-title" id="aiPanelTitle">Explanation</span>
+          <button class="close-btn" onclick="closeAiPanel()">✕</button>
+        </div>
+        <div class="ai-content" id="aiContent"></div>
+      </div>
+
+      <!-- Recall Panel -->
+      <div class="recall-panel" id="recallPanel" style="display:none">
+        <div class="recall-header">
+          <span class="recall-badge">Recall</span>
+          <button class="close-btn" onclick="closeRecall()">✕</button>
+        </div>
+        <p class="recall-question" id="recallQuestion"></p>
+        <textarea class="recall-input" id="recallInput" placeholder="Type your answer..."></textarea>
+        <div class="recall-actions">
+          <button class="btn-primary-sm" onclick="submitRecall()">Check with AI</button>
+          <button class="btn-ghost-sm" onclick="closeRecall()">Skip</button>
+        </div>
+        <div class="recall-feedback" id="recallFeedback" style="display:none">
+          <div class="feedback-label">Feedback</div>
+          <div class="feedback-text" id="recallFeedbackText"></div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Right Panel: Stats + Pomodoro -->
+    <aside class="side-panel right-panel">
+
+      <div class="stat-card">
+        <div class="stat-num" id="statRead">0</div>
+        <div class="stat-lbl">Sentences read</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="statTime">0:00</div>
+        <div class="stat-lbl">Session time</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="statPct">0%</div>
+        <div class="stat-lbl">Completed</div>
+      </div>
+
+      <div class="pomo-card">
+        <div class="pomo-label" id="pomoLabel">Focus</div>
+        <div class="pomo-timer" id="pomoTimer">25:00</div>
+        <div class="pomo-ring">
+          <svg viewBox="0 0 80 80">
+            <circle cx="40" cy="40" r="34" class="ring-bg"/>
+            <circle cx="40" cy="40" r="34" class="ring-fill" id="pomoRing" stroke-dasharray="213.6" stroke-dashoffset="0"/>
+          </svg>
+        </div>
+        <button class="pomo-btn" id="pomoBtn" onclick="togglePomodoro()">Start</button>
+        <div class="pomo-count"><span id="pomoCount">0</span> sessions done</div>
+      </div>
+
+      <div class="panel-label" style="margin-top:1rem">Keyboard</div>
+      <div class="kbd-hints">
+        <div class="kbd-row"><kbd>Space</kbd> Play/Pause</div>
+        <div class="kbd-row"><kbd>→</kbd> Next</div>
+        <div class="kbd-row"><kbd>←</kbd> Prev</div>
+        <div class="kbd-row"><kbd>R</kbd> Repeat</div>
+        <div class="kbd-row"><kbd>E</kbd> Explain</div>
+        <div class="kbd-row"><kbd>F</kbd> Focus</div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- Focus Mode Overlay -->
+<div id="focusOverlay" class="focus-overlay">
+  <div class="focus-inner">
+    <div class="focus-header">
+      <span class="focus-count" id="focusCount"></span>
+      <button class="focus-exit" onclick="toggleFocusMode()">Exit Focus</button>
+    </div>
+    <div class="focus-sentence" id="focusSentence"></div>
+    <div class="focus-controls">
+      <button class="focus-btn" onclick="prevSentence()">← Prev</button>
+      <button class="focus-btn play" onclick="togglePlay()" id="focusPlayBtn">▶ Play</button>
+      <button class="focus-btn" onclick="nextSentence()">Next →</button>
+      <button class="focus-btn explain" onclick="explainSentence()">Explain this</button>
+    </div>
+    <div class="focus-ai" id="focusAi" style="display:none">
+      <div class="focus-ai-text" id="focusAiText"></div>
+    </div>
+  </div>
+</div>
+
+<script src="/static/js/reader.js"></script>
+</body>
+</html>
