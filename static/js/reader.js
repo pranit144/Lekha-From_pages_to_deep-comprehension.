@@ -32,6 +32,7 @@ let pomoInterval = null;
 document.addEventListener('DOMContentLoaded', () => {
   setTimeout(loadAvailableVoices, 100);
   window.speechSynthesis.onvoiceschanged = loadAvailableVoices;
+  initMobileInteractions();
 });
 
 function loadAvailableVoices() {
@@ -45,6 +46,71 @@ function loadAvailableVoices() {
     option.textContent = voice.name + (voice.default ? ' (Default)' : '');
     voiceSelect.appendChild(option);
   });
+}
+
+/* ── Mobile Interactions ────────────────────────– */
+function initMobileInteractions() {
+  // Tap to play/pause
+  const currentSentence = document.getElementById('currentSentence');
+  if (currentSentence) {
+    currentSentence.addEventListener('click', togglePlay);
+  }
+
+  // Swipe gestures
+  let touchStartX = 0;
+  let touchEndX = 0;
+
+  document.addEventListener('touchstart', e => {
+    touchStartX = e.changedTouches[0].screenX;
+  }, false);
+
+  document.addEventListener('touchend', e => {
+    touchEndX = e.changedTouches[0].screenX;
+    handleSwipe();
+  }, false);
+
+  function handleSwipe() {
+    if (!sentences.length) return;
+    const swipeThreshold = 50;
+    const diff = touchStartX - touchEndX;
+
+    if (Math.abs(diff) > swipeThreshold) {
+      if (diff > 0) {
+        // Swiped left → next sentence
+        nextSentence();
+      } else {
+        // Swiped right → previous sentence
+        prevSentence();
+      }
+    }
+  }
+}
+
+function switchMobileTab(tab) {
+  // Update active tab
+  document.querySelectorAll('.mobile-nav-tab').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tab);
+  });
+
+  // Show/hide panels based on tab
+  const pdfPanel = document.getElementById('pdfPanel');
+  const sentencePanel = document.getElementById('sentencePanel');
+  const rightPanel = document.querySelector('.right-panel');
+
+  if (tab === 'read') {
+    if (pdfPanel) pdfPanel.style.display = 'none';
+    if (sentencePanel) sentencePanel.style.display = 'none';
+    if (rightPanel) rightPanel.style.display = 'none';
+  } else if (tab === 'pages') {
+    if (pdfPanel && isPdfMode) pdfPanel.style.display = 'flex';
+    if (sentencePanel && !isPdfMode) sentencePanel.style.display = 'flex';
+  } else if (tab === 'stats') {
+    if (rightPanel) rightPanel.style.display = 'flex';
+    if (pdfPanel) pdfPanel.style.display = 'none';
+    if (sentencePanel) sentencePanel.style.display = 'none';
+  } else if (tab === 'settings') {
+    // Show settings modal (future implementation)
+  }
 }
 
 const RECALL_QUESTIONS = [
