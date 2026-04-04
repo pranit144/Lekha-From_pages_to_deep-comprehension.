@@ -232,6 +232,37 @@
       </div>
     </aside>
   </div>
+
+  <!-- Mobile Bottom Navigation -->
+  <nav class="mobile-bottom-nav">
+    <button class="mobile-nav-tab active" data-tab="read" onclick="switchMobileTab('read')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+      </svg>
+      Read
+    </button>
+    <button class="mobile-nav-tab" data-tab="pages" onclick="switchMobileTab('pages')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 7h16M4 12h16M4 17h16"></path>
+      </svg>
+      Pages
+    </button>
+    <button class="mobile-nav-tab" data-tab="stats" onclick="switchMobileTab('stats')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="12" y1="2v20"></line>
+        <path d="M4 8v8M20 8v8M12 4l-4 4h8l-4-4"></path>
+      </svg>
+      Stats
+    </button>
+    <button class="mobile-nav-tab" data-tab="settings" onclick="switchMobileTab('settings')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M12 1v6m0 6v6M4.22 4.22l4.24 4.24m2.12 2.12l4.24 4.24M1 12h6m6 0h6M4.22 19.78l4.24-4.24m2.12-2.12l4.24-4.24M19.78 4.22l-4.24 4.24m-2.12 2.12l-4.24 4.24M23 12h-6m-6 0H5"></path>
+      </svg>
+      Settings
+    </button>
+  </nav>
 </div>
 
 <!-- Focus Mode Overlay -->
