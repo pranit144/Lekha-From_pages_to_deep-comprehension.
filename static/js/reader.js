@@ -186,14 +186,21 @@ function renderPdfPage(pageNum) {
   document.getElementById('pdfCurrentPage').textContent = pageNum;
   
   pdfDoc.getPage(pageNum).then(page => {
-    const viewport = page.getViewport({ scale: 1.5 });
+    const container = document.querySelector('.pdf-viewer-container');
+    const containerWidth = container.clientWidth - 24; // Account for padding
+    
+    // Calculate scale to fit container width
+    const viewport = page.getViewport({ scale: 1 });
+    const scale = Math.min(2.5, containerWidth / viewport.width);
+    const scaledViewport = page.getViewport({ scale: scale });
+    
     const canvas = document.getElementById('pdfCanvas');
     const ctx = canvas.getContext('2d');
     
-    canvas.width = viewport.width;
-    canvas.height = viewport.height;
+    canvas.width = scaledViewport.width;
+    canvas.height = scaledViewport.height;
     
-    page.render({ canvasContext: ctx, viewport: viewport });
+    page.render({ canvasContext: ctx, viewport: scaledViewport });
   });
 }
 
@@ -205,19 +212,23 @@ function generatePdfThumbnails() {
   const thumbCount = Math.min(10, pdfDoc.numPages);
   for (let i = 1; i <= thumbCount; i++) {
     pdfDoc.getPage(i).then(page => {
-      const viewport = page.getViewport({ scale: 0.5 });
+      // Scale thumbnails to fit in 60px width with 80px max height
+      const viewport = page.getViewport({ scale: 1 });
+      const scale = 60 / viewport.width;
+      const scaledViewport = page.getViewport({ scale: Math.min(scale, 80 / viewport.height) });
+      
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       
-      canvas.width = viewport.width;
-      canvas.height = viewport.height;
+      canvas.width = scaledViewport.width;
+      canvas.height = scaledViewport.height;
       canvas.className = 'pdf-thumbnail';
       if (i === currentPdfPage) canvas.classList.add('active');
       canvas.onclick = () => {
         jumpToPage(i);
       };
       
-      page.render({ canvasContext: ctx, viewport: viewport }).promise.then(() => {
+      page.render({ canvasContext: ctx, viewport: scaledViewport }).promise.then(() => {
         container.appendChild(canvas);
       });
     });
