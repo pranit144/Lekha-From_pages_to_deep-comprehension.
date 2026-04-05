@@ -472,7 +472,7 @@ html, body {
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
-  padding: 0.75rem 1rem 5.5rem 1rem;
+  padding: 0.75rem 1rem 6.75rem 1rem;
   gap: 1rem;
   width: 100%;
   max-width: 100%;
@@ -563,15 +563,16 @@ html, body {
   width: 100%;
   z-index: 100;
   height: auto;
+  min-height: 60px;
   overflow: hidden;
   box-sizing: border-box;
 }
 
 .ctrl-btn {
-  width: 40px;
-  height: 40px;
-  min-width: 40px;
-  min-height: 40px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   border: 1px solid var(--border);
   border-radius: 50%;
   background: transparent;
@@ -601,10 +602,10 @@ html, body {
 }
 
 .ctrl-btn.play-btn {
-  width: 48px;
-  height: 48px;
-  min-width: 48px;
-  min-height: 48px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   background: var(--accent);
   border-color: var(--accent);
   color: var(--bg);
@@ -678,7 +679,7 @@ html, body {
   background: var(--bg2);
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
-  z-index: 99;
+  z-index: 101;
   gap: 0;
 }
 
